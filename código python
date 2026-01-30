@@ -1,0 +1,126 @@
+import numpy as np
+import matplotlib.pyplot as plt # Faltaba este import
+import matplotlib.gridspec as gridspec
+
+# Eliminamos la llamada a la función inexistente y envolvemos todo 
+# o simplemente dejamos el código lineal.
+
+print("="*60)
+print("CREANDO COLLAGE CON LAS 10 VISUALIZACIONES")
+print("="*60)
+
+# Configuración global
+plt.rcParams['figure.figsize'] = (20, 16)
+plt.rcParams['font.size'] = 10
+
+# Crear figura con 10 subplots
+fig = plt.figure(constrained_layout=True)
+gs = gridspec.GridSpec(5, 2, figure=fig, hspace=0.3, wspace=0.3)
+
+# 1. Fibonacci lineal
+ax1 = fig.add_subplot(gs[0, 0])
+fib = [1, 1, 2, 3, 5, 8, 13, 21, 34, 55]
+dias = range(1, len(fib) + 1)
+ax1.plot(dias, fib, 'bo-', linewidth=2)
+ax1.set_title('1. Crecimiento de Infecciones (Lineal)')
+ax1.set_xlabel('Día k')
+ax1.set_ylabel('I(k)')
+ax1.grid(True, alpha=0.3)
+
+# 2. Fibonacci log
+ax2 = fig.add_subplot(gs[0, 1])
+ax2.semilogy(dias, fib, 'ro-', linewidth=2)
+ax2.set_title('2. Crecimiento de Infecciones (Logarítmico)')
+ax2.set_xlabel('Día k')
+ax2.set_ylabel('I(k) [log]')
+ax2.grid(True, alpha=0.3)
+
+# 3. Comparación órdenes
+ax3 = fig.add_subplot(gs[1, 0])
+def secuencia_j(j, n):
+    if n <= j: return [1] * n
+    seq = [1] * j
+    for i in range(j, n):
+        seq.append(sum(seq[-j:]))
+    return seq[:n]
+
+for j, color in zip([2, 3, 4], ['blue', 'red', 'green']):
+    seq = secuencia_j(j, 8)
+    ax3.plot(range(1, 9), seq, 'o-', color=color, label=f'j={j}')
+ax3.set_title('3. Comparación G(j,k) para Diferentes j')
+ax3.legend()
+ax3.grid(True, alpha=0.3)
+
+# 4. Box-counting
+ax4 = fig.add_subplot(gs[1, 1])
+r = [1/2, 1/4, 1/8, 1/16, 1/32]
+N = [8, 13, 21, 34, 55]
+log_r = np.log([1/x for x in r])
+log_N = np.log(N)
+m, b = np.polyfit(log_r, log_N, 1)
+ax4.scatter(log_r, log_N, s=60, c='blue', edgecolors='black')
+ax4.plot(log_r, m*log_r + b, 'r--', linewidth=2)
+ax4.set_title(f'4. Box-Counting: D = {m:.3f}')
+ax4.grid(True, alpha=0.3)
+
+# 5. Función generatriz
+ax5 = fig.add_subplot(gs[2, 0])
+phi = (1 + np.sqrt(5)) / 2
+eta = np.linspace(1.7, 3.5, 100)
+G2 = (eta - 1) * eta / (1 + (eta - 2) * eta**2)
+ax5.plot(eta, G2, 'b-', linewidth=2)
+ax5.axvline(x=phi, color='red', linestyle='--')
+ax5.set_title(r'5. Función Generatriz $G_2(\eta)$')
+ax5.grid(True, alpha=0.3)
+
+# 6. Capacidad contención
+ax6 = fig.add_subplot(gs[2, 1])
+k0 = range(2, 11)
+c_min = [fib[k-1] for k in k0]
+ax6.semilogy(k0, c_min, 'go-', linewidth=2)
+ax6.set_title('6. Capacidad Mínima de Contención')
+ax6.grid(True, alpha=0.3)
+
+# 7. Fractal Sierpinski
+ax7 = fig.add_subplot(gs[3, 0])
+x = [0, 1, 0.5, 0]
+y = [0, 0, 0.866, 0]
+ax7.fill(x, y, 'lightblue', edgecolor='black')
+ax7.set_title('7. Fractal Sierpinski-Fibonacci')
+ax7.axis('equal')
+ax7.axis('off')
+
+# 8. Árbol propagación
+ax8 = fig.add_subplot(gs[3, 1])
+def draw_tree_simple(x, y, length, angle, depth, ax):
+    if depth == 0: return
+    x_end = x + length * np.cos(angle)
+    y_end = y + length * np.sin(angle)
+    ax.plot([x, x_end], [y, y_end], 'b-', linewidth=depth)
+    draw_tree_simple(x_end, y_end, length*0.7, angle+0.5, depth-1, ax)
+    draw_tree_simple(x_end, y_end, length*0.7, angle-0.5, depth-1, ax)
+
+draw_tree_simple(0.5, 0, 0.3, np.pi/2, 4, ax8)
+ax8.set_title('8. Árbol de Propagación Viral')
+ax8.axis('equal')
+ax8.axis('off')
+
+# 9. Raíces características
+ax9 = fig.add_subplot(gs[4, 0])
+j_vals = range(2, 9)
+x_j = [1.618, 1.839, 1.928, 1.966, 1.984, 1.992, 1.996]
+ax9.plot(j_vals, x_j, 'mo-', linewidth=2)
+ax9.axhline(y=2, color='red', linestyle='--', alpha=0.5)
+ax9.set_title(r'9. Raíces Características $x_j$')
+ax9.grid(True, alpha=0.3)
+
+# 10. Tabla datos
+ax10 = fig.add_subplot(gs[4, 1])
+ax10.axis('off')
+tabla_data = [['k', 'j=2', 'j=3'], ['1', '1', '1'], ['2', '1', '1'], ['3', '2', '2']]
+table = ax10.table(cellText=tabla_data, cellLoc='center', loc='center')
+ax10.set_title('10. Valores de G(j,k)', y=1.1)
+
+plt.suptitle('Recopilación: Visualizaciones Propagación Viral', fontsize=16, fontweight='bold')
+plt.savefig('collage_10_visualizaciones.pdf', bbox_inches='tight')
+print("✅ COLLAGE CREADO: collage_10_visualizaciones.pdf")
