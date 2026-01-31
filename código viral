@@ -1,0 +1,51 @@
+# language=Python, caption=Código Python para simulación de propagación viral y visualización fractal, label=lst:python_code
+import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib.patches import Polygon
+
+def fibonacci_j_generalizada(j, k_max):
+    """Genera la secuencia G(j,k) para k = 1..k_max"""
+    G = [1] * j  # Condiciones iniciales
+
+    for k in range(j, k_max):
+        next_val = sum(G[-j:])
+        G.append(next_val)
+
+    return G[:k_max]
+
+def calcular_lambda_j(j, iteraciones=100):
+    """Calcula numericamente lambda_j mediante metodo de punto fijo"""
+    x = 1.5
+    for _ in range(iteraciones):
+        x = (1 + sum(x**(-i) for i in range(1, j)))**(1/j)
+    return x
+
+def dimension_fractal(j):
+    """Calcula la dimension fractal D_j = 2*log2(lambda_j)"""
+    lambda_j = calcular_lambda_j(j)
+    return 2 * np.log2(lambda_j)
+
+# Ejemplo: Virus con latencia de 1 dia (j=2)
+j = 2
+k_max = 20
+secuencia = fibonacci_j_generalizada(j, k_max)
+
+print(f"Secuencia G({j},k) para k=1..{k_max}:")
+for k, val in enumerate(secuencia, 1):
+    print(f"Dia {k:2d}: {val:6d} computadoras infectadas acumuladas")
+
+lambda_j = calcular_lambda_j(j)
+D_j = dimension_fractal(j)
+print(f"\nRaiz dominante lambda_{j} = {lambda_j:.9f}")
+print(f"Dimension fractal D_{j} = {D_j:.9f}")
+
+# Grafico de crecimiento
+plt.figure(figsize=(10, 6))
+plt.plot(range(1, k_max+1), secuencia, 'bo-', linewidth=2, markersize=6)
+plt.yscale('log')
+plt.xlabel('Dia (k)', fontsize=12)
+plt.ylabel('Computadoras infectadas (escala log)', fontsize=12)
+plt.title(f'Propagacion viral (j={j}): Secuencia Fibonacci G({j},k)', fontsize=14)
+plt.grid(True, alpha=0.3)
+plt.savefig('propagacion_viral_j2.png', dpi=300, bbox_inches='tight')
+plt.show()
